@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import * as echartsInit from 'https://cdn.jsdelivr.net/npm/echarts@6.0.0/dist/echarts.esm.min.js'
+import * as echarts from 'https://cdn.jsdelivr.net/npm/echarts@6.0.0/dist/echarts.esm.min.js'
 
 // -------------------
 // Supabase setup
@@ -192,7 +192,7 @@ async function drawChart(q){
     const counts = {}
     q.data_answer.forEach(a=>counts[a]=0)
     data.forEach(r=>counts[r.answer]=(counts[r.answer]||0)+1)
-    const chart = echartsInit(document.getElementById("chart-"+q.id))
+    const chart = echarts.init(document.getElementById("chart-"+q.id))
     chart.setOption({
         tooltip:{trigger:"item",formatter:"{b}: {c} ({d}%)"},
         series:[{
