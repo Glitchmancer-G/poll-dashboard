@@ -1,6 +1,8 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import * as echarts from 'https://cdn.jsdelivr.net/npm/echarts@6.0.0/dist/echarts.min.js'
 
+{/* <script src="https://echarts.apache.org/en/js/vendors/echarts/dist/echarts.min.js"></script> */}
+
 // -------------------
 // Supabase setup
 // -------------------
@@ -17,11 +19,22 @@ let state = {
 
 let editingQuestionId = null
 
+// Detect environment to set correct redirect URL
+const REDIRECT_URL = window.location.hostname.includes("localhost")
+  ? "http://localhost:3000"
+  : "https://glitchmancer-g.github.io/poll-dashboard/"
+
 // -------------------
 // Google Login
 // -------------------
 document.getElementById("google-login").onclick = async () => {
-    await supabase.auth.signInWithOAuth({ provider:"google" })
+    const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: REDIRECT_URL
+    }
+  })
+  if (error) console.error("Login error:", error.message)
 }
 
 // -------------------
