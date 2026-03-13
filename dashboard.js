@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import * as echarts from 'https://cdn.jsdelivr.net/npm/echarts@5.5.2/dist/echarts.esm.min.js'
+import * as echarts from 'https://cdn.jsdelivr.net/npm/echarts@6.0.0/dist/echarts.min.js'
 
 // -------------------
 // Supabase setup
