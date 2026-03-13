@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Poll Admin Dashboard</title>
+<script type="module" src="dashboard.js"></script>
+<style>
+    body { font-family: sans-serif; margin: 0; padding: 0; background:#f9f9f9;}
+    header { background:#1a1a1a; color:white; padding:1rem; }
+    main { padding: 1rem; }
+    #dashboard { display:none; }
+    .question-row { display:flex; align-items:center; margin-bottom:.5rem; }
+    .question-text { flex:1; }
+    button { margin-left:.5rem; padding:.2rem .5rem; }
+    .answer-row { display:flex; align-items:center; margin-bottom:.3rem; }
+    .answer-row input { flex:1; margin-right:.5rem; }
+    #stats { background:white; padding:1rem; margin-bottom:1rem; border-radius:6px; box-shadow:0 0 4px rgba(0,0,0,0.1);}
+    #questions-list { list-style:none; padding:0; }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>Poll Admin Dashboard</h1>
+    <button id="google-login">Login with Google</button>
+</header>
+
+<main>
+<div id="dashboard">
+
+    <!-- Stats -->
+    <div id="stats">
+        <div>Total Participants: <span id="participants">0</span></div>
+        <div>Total Votes: <span id="votes">0</span></div>
+        <div>Total Questions: <span id="questions-count">0</span></div>
+    </div>
+
+    <!-- Question Editor -->
+    <div id="question-editor" style="display:none; background:white; padding:1rem; margin-bottom:1rem; border-radius:6px; box-shadow:0 0 4px rgba(0,0,0,0.1);">
+        <h3>Edit Question</h3>
+        <input id="question-text" placeholder="Question text"/>
+        <div id="answers-container" style="margin-top:1rem;"></div>
+        <button id="add-answer">+ Add Option</button>
+        <button id="save-question">Save</button>
+        <button id="cancel-edit">Cancel</button>
+    </div>
+
+    <!-- Questions List -->
+    <div>
+        <h2>Questions</h2>
+        <ul id="questions-list"></ul>
+        <button id="add-question">+ Add Question</button>
+    </div>
+
+    <!-- Results / Charts -->
+    <div>
+        <h2>Live Results</h2>
+        <div id="charts-container" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;"></div>
+        <button id="export-csv">Export CSV</button>
+    </div>
+
+</div>
+</main>
+
+</body>
+</html>
