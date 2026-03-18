@@ -163,7 +163,7 @@ async function deleteQuestion(id){
 // Votes counter + participation stats
 // -------------------
 async function loadStats(){
-    const { data:votes } = await supabase.from("responses").select("*").eq("survey_id",SURVEY_ID)
+    const { data:votes } = await supabase.from("responses").select("*").where(`question_id.in.(select id from questions where survey_id='${SURVEY_ID}')`)
     const { data:sessions } = await supabase.from("survey_sessions").select("*").eq("survey_id",SURVEY_ID)
     const { data:questions } = await supabase.from("questions").select("*").eq("survey_id",SURVEY_ID)
     document.getElementById("votes").innerText=votes.length
@@ -190,7 +190,7 @@ async function loadResults(){
 }
 
 async function drawChart(q){
-    const { data } = await supabase.from("responses").select("*").eq("question_id",q.id).eq("survey_id",SURVEY_ID)
+    const { data } = await supabase.from("responses").select("*").eq("question_id",q.id)
     const counts = {}
     q.data_answer.forEach(a=>counts[a]=0)
     data.forEach(r=>counts[r.answer]=(counts[r.answer]||0)+1)
