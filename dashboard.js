@@ -122,11 +122,12 @@ saveBtn.onclick = async ()=>{
             data_answer:answers
         }).eq("id",editingQuestionId)
     } else {
-        await supabase.from("questions").eq("survey_id", SURVEY_ID).insert({
+        await supabase.from("questions").insert({
             question_text:text,
             data_label:answers,
             data_answer:answers,
-            order_index:state.questions.length
+            order_index:state.questions.length,
+            survey_id:SURVEY_ID
         })
     }
     questionEditor.style.display="none"
