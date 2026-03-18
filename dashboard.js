@@ -6,7 +6,7 @@ import * as echarts from 'https://cdn.jsdelivr.net/npm/echarts@6.0.0/dist/echart
 // -------------------
 const supabase = createClient(
             "https://acdxqepchqvfrmsvxdqg.supabase.co",
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjZHhxZXBjaHF2ZnJtc3Z4ZHFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1MTg0NzQsImV4cCI6MjA4ODA5NDQ3NH0.q6GZMi0AuQngltrrQJC0Ra7rD7crEwBdNyVTL4y_Qk8"
+            "xxx"
 )
 
 let state = {
@@ -21,6 +21,8 @@ let editingQuestionId = null
 const REDIRECT_URL = window.location.hostname.includes("localhost")
   ? "http://localhost:3000"
   : "https://glitchmancer-g.github.io/poll-dashboard/"
+
+const SURVEY_ID = "735cd0e2-2300-4bdb-bb35-9a1188d33854"
 
 // -------------------
 // Google Login
@@ -76,7 +78,7 @@ function addAnswerField(value=""){
 
 // Load all questions
 async function loadQuestions(){
-    const { data } = await supabase.from("questions").select("*").order("order_index")
+    const { data } = await supabase.from("questions").select("*").order("order_index").eq("survey_id",SURVEY_ID);
     state.questions = data
     renderQuestionList()
 }
@@ -120,7 +122,7 @@ saveBtn.onclick = async ()=>{
             data_answer:answers
         }).eq("id",editingQuestionId)
     } else {
-        await supabase.from("questions").insert({
+        await supabase.from("questions").eq("survey_id", SURVEY_ID).insert({
             question_text:text,
             data_label:answers,
             data_answer:answers,
@@ -161,9 +163,9 @@ async function deleteQuestion(id){
 // Votes counter + participation stats
 // -------------------
 async function loadStats(){
-    const { data:votes } = await supabase.from("responses").select("*")
-    const { data:sessions } = await supabase.from("survey_sessions").select("*")
-    const { data:questions } = await supabase.from("questions").select("*")
+    const { data:votes } = await supabase.from("responses").select("*").eq("survey_id",SURVEY_ID)
+    const { data:sessions } = await supabase.from("survey_sessions").select("*").eq("survey_id",SURVEY_ID)
+    const { data:questions } = await supabase.from("questions").select("*").eq("survey_id",SURVEY_ID)
     document.getElementById("votes").innerText=votes.length
     document.getElementById("participants").innerText=sessions.length
     document.getElementById("questions-count").innerText=questions.length
@@ -188,7 +190,7 @@ async function loadResults(){
 }
 
 async function drawChart(q){
-    const { data } = await supabase.from("responses").select("*").eq("question_id",q.id)
+    const { data } = await supabase.from("responses").select("*").eq("question_id",q.id).eq("survey_id",SURVEY_ID)
     const counts = {}
     q.data_answer.forEach(a=>counts[a]=0)
     data.forEach(r=>counts[r.answer]=(counts[r.answer]||0)+1)
@@ -212,7 +214,7 @@ async function drawChart(q){
 // Export CSV
 // -------------------
 document.getElementById("export-csv").onclick=async ()=>{
-    const { data:responses } = await supabase.from("responses").select("*")
+    const { data:responses } = await supabase.from("responses").select("*").eq("survey_id",SURVEY_ID)
     let csv="question_id,answer,session_id\n"
     responses.forEach(r=>{ csv+=`${r.question_id},${r.answer},${r.session_id}\n` })
     const blob = new Blob([csv],{type:"text/csv"})

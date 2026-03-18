@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Poll Admin Dashboard</title>
     <script type="module" src="dashboard.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         body {
             font-family: sans-serif;
@@ -70,17 +71,19 @@
 </head>
 
 <body>
-
-    <header>
-        <h1>Poll Admin Dashboard</h1>
-        <button id="google-login">Login with Google</button>
+    change the entire layout into tailwind css and make it look more modern and clean
+    <header class="bg-gray-800 text-white p-4">
+        <h1 class="text-xl font-bold">Poll Admin Dashboard</h1>
+        <button id="google-login" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            Login with Google
+        </button>
     </header>
 
     <main>
         <div id="dashboard">
 
             <!-- Stats -->
-            <div id="stats">
+            <div id="stats" class="bg-white p-4 mb-4 rounded shadow">
                 <div>Total Participants: <span id="participants">0</span></div>
                 <div>Total Votes: <span id="votes">0</span></div>
                 <div>Total Questions: <span id="questions-count">0</span></div>
@@ -88,27 +91,37 @@
 
             <!-- Question Editor -->
             <div id="question-editor"
-                style="display:none; background:white; padding:1rem; margin-bottom:1rem; border-radius:6px; box-shadow:0 0 4px rgba(0,0,0,0.1);">
-                <h3>Edit Question</h3>
-                <input id="question-text" placeholder="Question text" />
+                class="bg-white p-4 mb-4 rounded shadow" style="display:none;">
+                <h3 class="text-lg font-bold mb-2">Edit Question</h3>
+                <input id="question-text" placeholder="Question text" class="border border-gray-300 rounded py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <div id="answers-container" style="margin-top:1rem;"></div>
-                <button id="add-answer">+ Add Option</button>
-                <button id="save-question">Save</button>
-                <button id="cancel-edit">Cancel</button>
+                <button id="add-answer" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                    + Add Option
+                </button>
+                <button id="save-question" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Save
+                </button>
+                <button id="cancel-edit" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                    Cancel
+                </button>
             </div>
 
             <!-- Questions List -->
             <div>
                 <h2>Questions</h2>
-                <ul id="questions-list"></ul>
-                <button id="add-question">+ Add Question</button>
+                <ul id="questions-list" class="list-none p-0"></ul>
+                <button id="add-question" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    + Add Question
+                </button>
             </div>
 
             <!-- Results / Charts -->
             <div>
                 <h2>Live Results</h2>
-                <div id="charts-container" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;"></div>
-                <button id="export-csv">Export CSV</button>
+                <div id="charts-container" class="grid grid-cols-2 gap-4"></div>
+                <button id="export-csv" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                    Export CSV
+                </button>
             </div>
 
         </div>
