@@ -163,9 +163,10 @@ async function deleteQuestion(id){
 // Votes counter + participation stats
 // -------------------
 async function loadStats(){
-    const { data:votes } = await supabase.from("responses").select("*").where(`question_id.in.(select id from questions where survey_id='${SURVEY_ID}')`)
-    const { data:sessions } = await supabase.from("survey_sessions").select("*").eq("survey_id",SURVEY_ID)
     const { data:questions } = await supabase.from("questions").select("*").eq("survey_id",SURVEY_ID)
+    const questionIds = questions.map(q => q.id);
+    const { data:votes } = await supabase.from("responses").select("*").in("question_id", questionIds)
+    const { data:sessions } = await supabase.from("survey_sessions").select("*").eq("survey_id",SURVEY_ID)
     document.getElementById("votes").innerText=votes.length
     document.getElementById("participants").innerText=sessions.length
     document.getElementById("questions-count").innerText=questions.length
