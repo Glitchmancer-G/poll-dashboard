@@ -1,10 +1,9 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import * as echarts from 'https://cdn.jsdelivr.net/npm/echarts@6.0.0/dist/echarts.esm.min.js'
 
-const supabase = createClient(
-    "https://acdxqepchqvfrmsvxdqg.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjZHhxZXBjaHF2ZnJtc3Z4ZHFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1MTg0NzQsImV4cCI6MjA4ODA5NDQ3NH0.q6GZMi0AuQngltrrQJC0Ra7rD7crEwBdNyVTL4y_Qk8"
-)
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js'
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let state = {
     session: null,
