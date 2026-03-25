@@ -36,7 +36,7 @@ document.getElementById("google-login").onclick = async () => {
 async function checkSession() {
     const { data } = await supabase.auth.getSession()
     if (data.session) {
-        document.getElementById("google-login").style.display = "none"
+        document.getElementById("login-prompt").style.display = "none"
         document.getElementById("dashboard").classList.remove("hidden")
         await loadQuestions()
         await loadStats()
@@ -300,7 +300,12 @@ async function loadStats() {
 const chartsContainer = document.getElementById("charts-container")
  
 async function loadResults() {
-    chartsContainer.innerHTML = ""
+    // how to wait for the innerHTML assignment to complete?
+    await new Promise(resolve => {
+        chartsContainer.innerHTML = ""
+        requestAnimationFrame(resolve)
+    })
+
     for (let q of state.questions) {
         const card = document.createElement("div")
         card.className = "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 shadow-sm dark:shadow-none"
@@ -311,7 +316,8 @@ async function loadResults() {
  
         const chartDiv = document.createElement("div")
         chartDiv.id = "chart-" + q.id
-        chartDiv.style.height = "200px"
+        // Only fix height for chart-based questions
+        if (q.question_type !== "text") chartDiv.style.height = "200px"
  
         card.appendChild(title)
         card.appendChild(chartDiv)
@@ -328,7 +334,11 @@ async function drawChart(q) {
     const { data } = await supabase.from("responses").select("*").eq("question_id", q.id)
  
     if (q.question_type === "text") {
-        drawWordCloudChart("chart-" + q.id, data || [])
+        const chartDiv = document.getElementById("chart-" + q.id);
+        const chartData = document.createElement("p");
+        chartData.className = "text-sm text-zinc-700 dark:text-zinc-300"
+        chartData.textContent = data.map(r => r.answer).filter(Boolean).join(", ") || "No responses yet."
+        chartDiv.appendChild(chartData)        
         return
     }
  
@@ -412,18 +422,104 @@ document.getElementById("theme-toggle").addEventListener("click", () => {
 })
  
 // -------------------
-// Export CSV
+// Export Excel
 // -------------------
 document.getElementById("export-csv").onclick = async () => {
-    const { data: responses } = await supabase.from("responses").select("*")
-    let csv = "question_id,answer,session_id\n"
-    responses.forEach(r => { csv += `${r.question_id},${r.answer},${r.session_id}\n` })
-    const blob = new Blob([csv], { type: "text/csv" })
-    const url  = URL.createObjectURL(blob)
-    const a    = document.createElement("a")
-    a.href = url; a.download = "responses.csv"; a.click()
-    URL.revokeObjectURL(url)
+    const btn = document.getElementById("export-csv")
+    btn.textContent = "⏳ Exporting…"
+    btn.disabled = true
+
+    if (!window.XLSX) {
+        await new Promise((resolve, reject) => {
+            const s = document.createElement("script")
+            s.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"
+            s.onload = resolve; s.onerror = reject
+            document.head.appendChild(s)
+        })
+    }
+
+    const questionIds = state.questions.map(q => q.id)
+
+    const [{ data: sessions }, { data: responses }] = await Promise.all([
+        supabase.from("survey_sessions").select("*").eq("survey_id", SURVEY_ID).order("created_at"),
+        supabase.from("responses").select("*").in("question_id", questionIds)
+    ])
+
+    const wb = XLSX.utils.book_new()
+
+    // ── Sheet 1: Submissions (one row per session) ────────────────────────
+    const answerMap = {}
+    ;(responses || []).forEach(r => {
+        if (!answerMap[r.session_id]) answerMap[r.session_id] = {}
+        answerMap[r.session_id][r.question_id] = r.answer
+    })
+
+    const subHeader = [
+        "Session ID",
+        "Submitted At",
+        ...state.questions.map((q, i) => `Q${i + 1}: ${q.question_text}`)
+    ]
+
+    const subRows = (sessions || []).map(s => [
+        s.id,
+        s.created_at ? new Date(s.created_at).toLocaleString() : "",
+        ...state.questions.map(q => answerMap[s.id]?.[q.id] ?? "")
+    ])
+
+    const rawWs = XLSX.utils.aoa_to_sheet([subHeader, ...subRows])
+    rawWs["!freeze"] = { xSplit: 0, ySplit: 1 }
+    rawWs["!cols"] = [
+        { wch: 38 },
+        { wch: 20 },
+        ...state.questions.map(() => ({ wch: 32 }))
+    ]
+    XLSX.utils.book_append_sheet(wb, rawWs, "Submissions")
+
+    // ── Sheet 2: Summary ──────────────────────────────────────────────────
+    const summaryRows = []
+
+    state.questions.forEach((q, i) => {
+        const qResponses = (responses || []).filter(r => r.question_id === q.id)
+
+        summaryRows.push([`Q${i + 1}`, q.question_text])
+        summaryRows.push([])
+
+        if (q.question_type === "text") {
+            summaryRows.push(["#", "Answer"])
+            if (qResponses.length === 0) {
+                summaryRows.push(["", "(no answers yet)"])
+            } else {
+                qResponses.forEach((r, idx) => summaryRows.push([idx + 1, r.answer]))
+            }
+        } else {
+            const counts = {}
+            q.data_answer.forEach(a => counts[a] = 0)
+            qResponses.forEach(r => { if (counts[r.answer] !== undefined) counts[r.answer]++ })
+            const total = qResponses.length
+
+            summaryRows.push(["Option", "Votes", "Percentage"])
+            q.data_label.forEach((label, li) => {
+                const votes = counts[q.data_answer[li]] || 0
+                const pct   = total > 0 ? (votes / total * 100).toFixed(1) + "%" : "0%"
+                summaryRows.push([label, votes, pct])
+            })
+            summaryRows.push(["Total", total, ""])
+        }
+
+        summaryRows.push([])
+        summaryRows.push([])
+    })
+
+    const summaryWs = XLSX.utils.aoa_to_sheet(summaryRows)
+    summaryWs["!cols"] = [{ wch: 4 }, { wch: 44 }, { wch: 14 }]
+    XLSX.utils.book_append_sheet(wb, summaryWs, "Summary")
+
+    XLSX.writeFile(wb, "poll-results.xlsx")
+
+    btn.textContent = "↓ Export Excel"
+    btn.disabled = false
 }
+
  
 // -------------------
 // Realtime
