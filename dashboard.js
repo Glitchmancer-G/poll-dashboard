@@ -338,7 +338,7 @@ async function drawChart(q) {
         const chartData = document.createElement("p");
         chartData.className = "text-sm text-zinc-700 dark:text-zinc-300"
         // break into new line for each responses
-        chartData.textContent = data.map(r => r.answer).filter(Boolean).join("\n") || "No responses yet."
+        chartData.innerText = data.map(r => r.answer).filter(Boolean).join("\n") || "No responses yet."
         chartDiv.appendChild(chartData)        
         return
     }
