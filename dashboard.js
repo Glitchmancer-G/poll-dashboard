@@ -337,7 +337,7 @@ async function drawChart(q) {
         const chartDiv = document.getElementById("chart-" + q.id);
         const chartData = document.createElement("p");
         chartData.className = "text-sm text-zinc-700 dark:text-zinc-300"
-        chartData.textContent = data.map(r => r.answer).filter(Boolean).join(", ") || "No responses yet."
+        chartData.textContent = data.map(r => r.answer).filter(Boolean).join("<br/>") || "No responses yet."
         chartDiv.appendChild(chartData)        
         return
     }
@@ -368,51 +368,6 @@ async function drawChart(q) {
         }]
     })
     state.charts[q.id] = chart
-}
- 
-function buildWordFrequency(responses) {
-    const stopWords = new Set([
-        "a","an","the","and","or","but","in","on","at","to","for",
-        "of","with","is","it","this","that","was","are","be","i","my","we"
-    ])
-    const freq = {}
-    responses.forEach(r => {
-        const words = (r.answer || "").trim().toLowerCase()
-            .replace(/[^a-z0-9\s]/g, "").split(/\s+/)
-        words.forEach(word => {
-            if (word.length < 2 || stopWords.has(word)) return
-            freq[word] = (freq[word] || 0) + 1
-        })
-    })
-    return Object.entries(freq).map(([text, value]) => ({ name: text, value }))
-}
- 
-function drawWordCloudChart(containerId, responses) {
-    const existing = echarts.getInstanceByDom(document.getElementById(containerId))
-    if (existing) existing.dispose()
- 
-    const chart = echarts.init(document.getElementById(containerId))
-    const colors = ["#f59e0b", "#3b82f6", "#10b981", "#ef4444", "#8b5cf6"]
- 
-    chart.setOption({
-        backgroundColor: "transparent",
-        series: [{
-            type: "wordCloud",
-            shape: "circle",
-            gridSize: 4,
-            sizeRange: [10, 38],
-            rotationRange: [0, 0],
-            layoutAnimation: false,
-            textStyle: {
-                fontFamily: "'IBM Plex Sans', sans-serif",
-                fontWeight: "600",
-                color: () => colors[Math.floor(Math.random() * colors.length)]
-            },
-            data: buildWordFrequency(responses)
-        }]
-    })
-    setTimeout(() => chart.resize(), 100)
-    state.charts[containerId] = chart
 }
  
 // Re-render charts when theme changes so label colours update
